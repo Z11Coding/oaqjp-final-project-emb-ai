@@ -11,18 +11,20 @@ def emotion_detector(text_to_analyse):
     response = requests.post(url, headers=headers, data=json.dumps(data))
     responseTeamA = response.json()
     responseTeamB = responseTeamA["emotionPredictions"][0]["emotion"]
-     
-    strongestEmotion:str = "???"
-    strongestValue:float = 0
-    for emotion in responseTeamB.keys():
-        value = responseTeamB[emotion]
-        if value > strongestValue:
-            strongestEmotion = emotion
-            strongestValue = value
+    
+    if response.status_code == 400:
+        for emotion in responseTeamB.keys():
+            responseTeamB[emotion] = None
+        return responseTeamB
+    else:
+            strongestEmotion:str = "???"
+            strongestValue:float = 0
+            for emotion in responseTeamB.keys():
+                value = responseTeamB[emotion]
+                if value > strongestValue:
+                    strongestEmotion = emotion
+                    strongestValue = value
 
-    responseTeamB["dominant_emotion"] = strongestEmotion
+            responseTeamB["dominant_emotion"] = strongestEmotion
 
-    return print(json.dumps(responseTeamB))
-
-if len(sys.argv[0]) > 0:
-    text_to_analyze = emotion_detector(sys.argv[1])
+    return responseTeamB
